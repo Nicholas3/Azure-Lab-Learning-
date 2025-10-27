@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+model User {
+  id              Int    @id @default(autoincrement())
+  name            String
+  email           String @unique
+  password        String
+  role            Role
+  profileImageUrl String @default("https://firebasestorage.googleapis.com/v0/b/onlymovie-27550.appspot.com/o/TPA-Web-Premove%2Fdefault-profile-image.png?alt=media&token=aa4445fb-61f4-4751-85a0-960e9f2d5932")
+
+  taughtCourses   Course[]          @relation("TeacherCourses")
+  enrollments     Enrollment[]
+  submissions     Submission[]
+  CompletedLesson CompletedLesson[]
+}
+
+model Course {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  image       String
+  teacherId   Int?
+
+  teacher     User?        @relation("TeacherCourses", fields: [teacherId], references: [id], onDelete: SetNull)
+  enrollments Enrollment[]
+  assignments Assignment[]
+  Lesson      Lesson[]
+
+  @@index([teacherId])
+}
+
+model Lesson {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  contentUrl  String
+  courseId    Int
+  createdAt   DateTime @default(now())
+
+  course          Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  CompletedLesson CompletedLesson[]
+
+  @@index([courseId])
+}
+
+model CompletedLesson {
+  id          Int      @id @default(autoincrement())
+  lessonId    Int
+  studentId   Int
+  completedAt DateTime @default(now())
+
+  lesson  Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, studentId])
+  @@index([lessonId])
+  @@index([studentId])
+}
+
+model Assignment {
+  id          Int       @id @default(autoincrement())
+  courseId    Int
+  title       String
+  description String?
+  createdAt   DateTime  @default(now())
+  dueDate     DateTime?
+
+  course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+
+  @@index([courseId])
+}
+
+model Submission {
+  id                Int      @id @default(autoincrement())
+  assignmentId      Int
+  studentId         Int
+  submissionContent String?
+  submittedAt       DateTime @default(now())
+  grade             String?
+  feedback          String?
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student    User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, studentId])
+  @@index([assignmentId])
+  @@index([studentId])
+}
+
+model Enrollment {
+  id        Int @id @default(autoincrement())
+  studentId Int
+  courseId  Int
+
+  student User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course  Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
+  @@index([studentId])
+  @@index([courseId])
+}

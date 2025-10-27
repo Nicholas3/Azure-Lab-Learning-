@@ -1,0 +1,45 @@
+services:
+  frontend:
+    image: lms-f:latest
+    container_name: lms-frontend
+    ports:
+      - 8000:80
+    env_file:
+      - ./Frontend/.env
+    build: ./Frontend
+    networks:
+      - lms-network
+    depends_on:
+      - lms-database
+
+
+  backend:
+    image: lms-b:latest
+    container_name: lms-backend
+    ports:
+      - 3000:3000
+    env_file:
+      - ./Backend/.env
+    build: ./Backend
+    networks:
+      - lms-network
+  
+  lms-database:
+    image: public.ecr.aws/docker/library/mysql:9.4
+    container_name: lms-database
+    env_file: 
+      - ./.env
+    volumes:
+      - lms-volume:/var/lib/mysql
+    networks:
+      - lms-network
+
+networks:
+  lms-network:
+
+volumes:
+  lms-volume: 
+
+#docker compose build
+#docker compose up
+#credential: student1@example.com ; password123
