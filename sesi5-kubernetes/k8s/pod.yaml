@@ -1,0 +1,26 @@
+#after terraform apply
+#az aks get-credentials -g sesi6-rg -n sesi6aks
+#kubectl config get-contexts
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.14.2
+    ports:
+    - containerPort: 80
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+
+#kubectl apply -f .\pod.yaml
+#kubectl get pods -o wide
+#kubectl port-forward nginx 8003:80
+#kubectl explain replicaset

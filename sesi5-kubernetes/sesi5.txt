@@ -1,0 +1,6 @@
+docker tag [image lama:tag] [image baru:tag]
+image baru: container registry -> login server
+
+docker push [image baru:tag]
+
+az acr repository list --name [nama registry] --output table
